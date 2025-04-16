@@ -1,0 +1,44 @@
+services:
+  postgres:
+    image: postgres
+    volumes:
+      - data:/data/db
+    env_file:
+      - ./env/mongo.env
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  db-initializer:
+    build:
+      context: ./db-initializer
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./env/db.env
+
+  auth-service:
+    build: ./auth-service
+    env_file:
+      - ./env/auth.env
+      - ./env/db.env
+    depends_on:
+      db-initializer:
+        condition: service_completed_successfully
+  
+  gateway-service:
+    build: ./gateway-service
+    ports:
+      - "8080:8080"
+    env_file:
+      - ./env/gateway.env
+    depends_on:
+      - auth-service
+
+volumes:
+  data:
