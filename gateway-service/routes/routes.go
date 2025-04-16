@@ -7,7 +7,7 @@ import (
 
 func RegisterRoutes(server *gin.Engine) {
 	server.POST("/signup", signup)
-	//server.POST("/login", login)
+	server.POST("/login", login)
 
 	//routes that need authentication
 	authenticated := server.Group("/")
